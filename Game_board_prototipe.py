@@ -58,7 +58,7 @@ class GameBoard(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Game Board')
-        self.setGeometry(0, 0, 600, 600)  # Устанавливаем размер окна 1920 на 1080
+        self.setGeometry(0, 0, 600, 600)  # Устанавливаем размер окна 600 на 600
 
         size = 15  # Размер игрового поля (вы можете поменять на другое значение)
 
