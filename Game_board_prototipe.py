@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVB
 from PyQt5.QtCore import QTimer, QTime
 
 
-class MemoryGame(QWidget):
+class Time(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -108,15 +108,49 @@ class GameBoard(QWidget):
             self.valuesMatrix[i][j] = self.currentPlayer
             index = 15 * i + j
             if self.currentPlayer == 1:
-                self.buttonMatrix[index].setStyleSheet('''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_white.png);}''')
-                self.buttonMatrix[index].setText(str(self.currentPlayer))
+                self.buttonMatrix[index].setStyleSheet(
+                    '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_white.png);}''')
+                self.buttonMatrix[index].setText('')
             else:
-                self.buttonMatrix[index].setStyleSheet('''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_black.png);}''')
-                self.buttonMatrix[index].setText(str(self.currentPlayer))
+                self.buttonMatrix[index].setStyleSheet(
+                    '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_black.png);}''')
+                self.buttonMatrix[index].setText('')
+
+            if self.checkWin(i, j):
+                self.timeLabel.setText(f"Победитель: Игрок {self.currentPlayer}")  # Вывод победителя
+                self.timer.stop()  # Останавливаем таймер после победы
+                self.disableButtons()  # Деактивируем кнопки после победы
+
             self.currentPlayer *= -1  # Смена игрока
+
+    def checkWin(self, row, col):
+        directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
+
+        for d in directions:
+            count = 1
+            for i in range(1, 5):
+                r = row + i * d[0]
+                c = col + i * d[1]
+                if 0 <= r < 15 and 0 <= c < 15 and self.valuesMatrix[r][c] == self.currentPlayer:
+                    count += 1
+                else:
+                    break
+
+            for i in range(1, 5):
+                r = row - i * d[0]
+                c = col - i * d[1]
+                if 0 <= r < 15 and 0 <= c < 15 and self.valuesMatrix[r][c] == self.currentPlayer:
+                    count += 1
+                else:
+                    break
+
+            if count >= 5:
+                return True
+
+        return False
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    game = MemoryGame()
+    game = Time()
     sys.exit(app.exec_())
