@@ -1,10 +1,54 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QLabel, QDialog
+from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtCore import QTimer, QTime, Qt
 
-from PyQt5.QtCore import QTimer, QTime
+class MainForm(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Main Form')
+        self.setGeometry(100, 100, 300, 200)
+        self.setFixedSize(1000, 1000)
+        layout = QVBoxLayout()
+
+        gomoku_label = QLabel('Gomoku', self)
+        gomoku_label.setFont(QFont("Arial", 36, QFont.Bold))
+        gomoku_label.setAlignment(Qt.AlignCenter)
+        gomoku_label.setStyleSheet("border: none")  # убираем контур
+        layout.addWidget(gomoku_label)
+
+        start_game_button = QPushButton('Начало игры', self)
+        start_game_button.setFixedHeight(250)
+        start_game_button.setFont(QFont("Arial", 36))
+        start_game_button.clicked.connect(self.openNewGameForm)
+        layout.addWidget(start_game_button)
+
+        training_button = QPushButton('Обучение', self)
+        training_button.setFixedHeight(250)
+        training_button.setFont(QFont("Arial", 36))
+        training_button.clicked.connect(self.openTrainingForm)
+        layout.addWidget(training_button)
+
+        exit_button = QPushButton('Выход', self)
+        exit_button.setFixedHeight(250)
+        exit_button.setFont(QFont("Arial", 36))
+        exit_button.clicked.connect(self.close)
+        layout.addWidget(exit_button)
+
+        self.setLayout(layout)
+
+    def openNewGameForm(self):
+        self.hide()  # Закрываем текущую форму
+        main_form = GameBoard()
+        main_form.show()
+
+    def openTrainingForm(self):
+        self.hide()
+        training_form = TrainingForm()
+        training_form.show()
 
 
-class Time(QWidget):
+class NewGameForm(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -38,6 +82,7 @@ class Time(QWidget):
     def updateTimerLabel(self):
         self.timeLabel.setText(f"Оставшееся время: {self.timerValue.toString('mm:ss')}")
 
+
 class GameBoard(QWidget):
     def __init__(self):
         super().__init__()
@@ -49,9 +94,11 @@ class GameBoard(QWidget):
             self.valuesMatrix[i][j] = self.currentPlayer
             index = 15 * i + j
             if self.currentPlayer == 1:
-                self.buttonMatrix[index].setStyleSheet('''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_white.png);}''')
+                self.buttonMatrix[index].setStyleSheet(
+                    '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_white.png);}''')
             else:
-                self.buttonMatrix[index].setStyleSheet('''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_black.png);}''')
+                self.buttonMatrix[index].setStyleSheet(
+                    '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board_black.png);}''')
 
             if self.checkWin(i, j):
                 self.timeLabel.setText(f"Победитель: Игрок {self.currentPlayer}")  # Вывод победителя
@@ -60,10 +107,9 @@ class GameBoard(QWidget):
             else:
                 self.currentPlayer *= -1  # Смена игрока, если нет победителя
 
-
     def initUI(self):
         self.setWindowTitle('Game Board')
-        self.setGeometry(0,0, 600, 600)  # Устанавливаем размер окна 600 на 600
+        self.setGeometry(0, 0, 600, 600)  # Устанавливаем размер окна 600 на 600
 
         self.gridLayout = QGridLayout()  # Создаем сетку для размещения кнопок
         self.gridLayout.setSpacing(0)  # Устанавливаем отсутствие отступов между кнопками
@@ -76,13 +122,13 @@ class GameBoard(QWidget):
                 button = QPushButton(f'({i}, {j})', self)
                 button.setFixedSize(64, 64)  # Устанавливаем фиксированный размер кнопки, делаем ее квадратной
                 button.collate = QPushButton("Collate")
-                button.setStyleSheet('''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board.png);}''')
+                button.setStyleSheet(
+                    '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board.png);}''')
                 button.clicked.connect(lambda _, i=i, j=j: self.buttonClicked(i, j))  # Подключаем обработчик клика
                 self.buttonMatrix.append(button)
                 self.gridLayout.addWidget(button, i, j)
                 self.setLayout(self.gridLayout)
                 button.setText('')
-
 
         center_widget = QWidget()
         center_layout = QVBoxLayout()
@@ -98,8 +144,6 @@ class GameBoard(QWidget):
         main_layout.addStretch(1)
 
         self.setLayout(main_layout)
-
-
 
         self.currentPlayer = 1  # Начинаем с -1 (второй игрок)
 
@@ -117,13 +161,15 @@ class GameBoard(QWidget):
                 self.buttonMatrix[index].setText('')
 
             if self.checkWin(i, j):
-                self.timeLabel.setText(f"Победитель: Игрок {self.currentPlayer}")  # Вывод победителя
-                self.timer.stop()  # Останавливаем таймер после победы
                 self.disableButtons()  # Деактивируем кнопки после победы
 
             self.currentPlayer *= -1  # Смена игрока
 
     def checkWin(self, row, col):
+        # Проверка на заполнение всего поля
+        if all(all(cell != 0 for cell in row) for row in self.valuesMatrix):
+            return None  # Ничья
+
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
 
         for d in directions:
@@ -145,12 +191,29 @@ class GameBoard(QWidget):
                     break
 
             if count >= 5:
-                return True
+                winner = "Белые" if self.currentPlayer == 1 else "Черные"
+                return winner
 
-        return False
+        return None
+
+class WinnerForm:
+    def __init__(self, winner):
+        self.winner = winner
+
+    def display_winner(self):
+        print(f"Победитель: {self.winner}")
+
+# Класс для формы с выводом ничьей
+class TieForm:
+    def __init__(self):
+        pass
+
+    def display_tie(self):
+        print("Ничья")
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    game = Time()
+    main_form = MainForm()
+    main_form.show()
     sys.exit(app.exec_())
