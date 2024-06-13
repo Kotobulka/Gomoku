@@ -62,7 +62,7 @@ class GameBoard(QWidget):
         for i in range(15):
             for j in range(15):
                 button = QPushButton(f'({i}, {j})', self)
-                button.setFixedSize(64, 64)  # Устанавливаем фиксированный размер кнопки, делаем ее квадратной
+                button.setFixedSize(65, 65)  # Устанавливаем фиксированный размер кнопки, делаем ее квадратной
                 button.collate = QPushButton("Collate")
                 button.setStyleSheet(
                     '''QPushButton {border: none; margin: 0px; padding: 0px; border-image: url(board.png);}''')
