@@ -153,7 +153,7 @@ class TutorialForms(QDialog):
         self.setFixedSize(1000, 1000)
 
         self.imagelable = QLabel(self)
-        pixmap = QPixmap('board.png') 
+        pixmap = QPixmap('image/Tutotial.png')
         self.imagelable.setPixmap(pixmap)
         self.imagelable.resize(1000, 1000)
 
